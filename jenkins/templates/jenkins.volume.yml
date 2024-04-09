@@ -30,7 +30,7 @@ spec:
         - key: kubernetes.io/hostname
           operator: In
           values:
-          - worker-node01
+          - {{ .Values.jenkins.nodeAffinityName }}
 
 ---
 apiVersion: v1
