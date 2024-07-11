@@ -96,3 +96,9 @@ fabric.properties
 # Chart dependencies
 **/charts/*.tgz
 
+_.beafowl.fr_private_key.key
+beafowl.fr_ssl_certificate.cer
+htpasswd
+.idea
+.vscode
+

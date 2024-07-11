@@ -1,3 +1,0 @@
-jenkins:
-  image: jenkins/jenkins:latest
-  password: <Password in base 64 coded>

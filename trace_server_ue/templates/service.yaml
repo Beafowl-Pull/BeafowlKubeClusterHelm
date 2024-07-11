@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "trace.fullname" . }}
+  labels:
+    {{- include "trace.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      protocol: TCP
+      name: http
+    - port: {{ .Values.service.additionalPort }}
+      protocol: TCP
+      name: additional-port
+  selector:
+    {{- include "trace.selectorLabels" . | nindent 4 }}
