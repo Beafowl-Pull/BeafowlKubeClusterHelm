@@ -1,0 +1,48 @@
+replicaCount: 1
+
+image:
+  repository: registry.beafowl.fr/helix/helix
+  tag: lts
+  pullPolicy: Always
+
+imagePullSecrets:
+  - name: regcred
+
+service:
+  type: LoadBalancer
+  port: 1666
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations: {}
+  hosts:
+    - host: helix.beafowl.fr
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: beafowl-tls
+      hosts:
+        - helix.beafowl.fr
+
+persistence:
+  enabled: true
+  storageClass: openebs-hostpath
+  size: 250Gi
+
+rbac:
+  create: true
+  serviceAccountName: helix-sa
+
+serviceAccount:
+  create: true
+  name: ""
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+
+resources: {}

@@ -1,0 +1,14 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: large-body-limit
+  namespace: traefik
+spec:
+  buffering:
+    maxRequestBodyBytes: 2000000000  # 2GB
+    maxResponseBodyBytes: 2000000000  # 2GB
+    memRequestBodyBytes: 104857600  # 10MB
+    memResponseBodyBytes: 104857600  # 10MB
+  rateLimit:
+    burst: 0
+    average: 0

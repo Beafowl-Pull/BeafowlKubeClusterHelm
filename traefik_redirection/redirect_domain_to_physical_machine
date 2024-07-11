@@ -1,0 +1,89 @@
+#!/bin/bash
+
+# Function to create a namespace if it doesn't exist
+create_namespace() {
+  local namespace=$1
+  kubectl get namespace $namespace > /dev/null 2>&1
+  if [ $? -ne 0 ]; then
+    echo "Creating namespace $namespace"
+    kubectl create namespace $namespace
+  else
+    echo "Namespace $namespace already exists"
+  fi
+}
+
+# Function to create the Kubernetes resource files and apply them
+deploy_resources() {
+  local domain=$1
+  local ip=$2
+  local namespace=$3
+  local port=$4
+  local app_name=$5
+
+  cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: $app_name
+  namespace: $namespace
+subsets:
+  - addresses:
+      - ip: $ip
+    ports:
+      - port: $port
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: $app_name
+  namespace: $namespace
+spec:
+  type: ClusterIP
+  ports:
+    - port: $port
+      targetPort: $port
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ${app_name}-ingress
+  namespace: $namespace
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/redirect-entry-point: websecure
+    traefik.ingress.kubernetes.io/redirect-permanent: "true"
+spec:
+  tls:
+    - hosts:
+        - $domain
+      secretName: beafowl-tls
+  rules:
+    - host: $domain
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: $app_name
+                port:
+                  number: $port
+EOF
+
+  echo "Deployment completed successfully."
+}
+
+# Function to prompt user for input
+get_user_input() {
+  read -p "Enter the domain name for the Ingress: " DOMAIN
+  read -p "Enter the IP address of the external server: " IP
+  read -p "Enter the Kubernetes namespace: " NAMESPACE
+  read -p "Enter the port number: " PORT
+  read -p "Enter the name of the application: " APP_NAME
+}
+
+# Main script execution
+get_user_input
+create_namespace $NAMESPACE
+deploy_resources $DOMAIN $IP $NAMESPACE $PORT $APP_NAME
